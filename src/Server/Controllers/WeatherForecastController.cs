@@ -29,4 +29,22 @@ public class WeatherForecastController : ControllerBase
         })
         .ToArray();
     }
+
+    [HttpGet("callback")]
+    public object GetThreadCount()
+    {
+        ThreadPool.GetMinThreads(out int minW, out int minIo);
+        ThreadPool.GetMaxThreads(out int maxW, out int maxIo);
+        ThreadPool.GetAvailableThreads(out int avW, out int avIo);
+
+        return new { MinWorker = minW, MinIo = minIo, MaxWorker = maxW, MaxIo = maxIo, AvailableWorker = avW, AvailableIo = avIo };
+    }
+
+    [HttpPost("callback")]
+    public async Task<IActionResult> Callback()
+    {
+        await Task.Delay(1000);
+
+        return this.Ok();
+    }
 }
