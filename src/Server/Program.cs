@@ -1,5 +1,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    // serverOptions.Limits.MaxConcurrentConnections = 3;
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
