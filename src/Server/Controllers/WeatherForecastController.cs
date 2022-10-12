@@ -6,6 +6,11 @@ namespace Server.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
+    private static readonly object syncLock = new();
+    private static int connectionCount = 0;
+    private static int maxConnections = 0;
+    private static int totalRequests = 0;
+
     private static readonly string[] Summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -37,13 +42,42 @@ public class WeatherForecastController : ControllerBase
         ThreadPool.GetMaxThreads(out int maxW, out int maxIo);
         ThreadPool.GetAvailableThreads(out int avW, out int avIo);
 
-        return new { MinWorker = minW, MinIo = minIo, MaxWorker = maxW, MaxIo = maxIo, AvailableWorker = avW, AvailableIo = avIo };
+        return new
+        {
+            MinWorker = minW,
+            MinIo = minIo,
+            MaxWorker = maxW,
+            MaxIo = maxIo,
+            AvailableWorker = avW,
+            AvailableIo = avIo,
+            ConnectionCount = connectionCount,
+            MaxConnections = maxConnections,
+            TotalRequests = totalRequests
+        };
     }
 
     [HttpPost("callback")]
     public async Task<IActionResult> Callback()
     {
-        await Task.Delay(1000);
+        const int delayLength = 3000;
+
+        int currentCount = -1;
+        int max = -1;
+        int requestsSoFar = -1;
+
+        lock (syncLock)
+        {
+            currentCount = ++connectionCount;
+            max = maxConnections = Math.Max(maxConnections, currentCount);
+            requestsSoFar = ++totalRequests;
+        }
+        
+        await Task.Delay(delayLength);
+
+        Interlocked.Decrement(ref connectionCount);
+
+        _logger.LogInformation("\tConnection count: {ConnectionCount}\n\tMax connections: {maxConnections}\n\tRequests so far: {totalRequests}",
+            currentCount, max, requestsSoFar);
 
         return this.Ok();
     }
