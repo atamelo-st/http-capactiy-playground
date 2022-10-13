@@ -59,7 +59,7 @@ public class WeatherForecastController : ControllerBase
     [HttpPost("callback")]
     public async Task<IActionResult> Callback()
     {
-        const int delayLength = 3000;
+        const int delayLength = 5000;
 
         int currentCount = -1;
         int max = -1;
