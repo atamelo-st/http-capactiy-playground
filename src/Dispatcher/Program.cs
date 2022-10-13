@@ -21,11 +21,9 @@ public class Program
                 Console.Write("Sliding window size: ");
                 int windowSize = int.TryParse(Console.ReadLine(), out int size) is true ? size : 1;
 
-
                 Console.WriteLine("Posting to {0}", url);
                 Console.WriteLine("Http version: {0}", client.DefaultRequestVersion);
 
-                // TODO: highly inefficient, think of another approach for tracking/awaiting outstanding tasks
                 var tasks = new Task[windowSize];
 
                 for (int i = 0; i < windowSize; i++)
@@ -39,6 +37,7 @@ public class Program
 
                 while (tasksRemaining > 0)
                 {
+                    // TODO: highly inefficient, think of another approach for tracking/awaiting outstanding tasks
                     int finishedTask = Task.WaitAny(tasks);
 
                     try
